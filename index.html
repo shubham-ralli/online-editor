@@ -16,6 +16,7 @@
     body,
     html {
       height: 100%;
+      background: #010101;
     }
 
     /* Remove default margins/paddings for flexbox */
@@ -133,12 +134,12 @@
     }
 
     .tab_box1,
-    .tab_box2 {
+    .tab_box2, .tab_box3{
       display: none;
     }
 
     .tab_box1.active,
-    .tab_box2.active {
+    .tab_box2.active, .tab_box3.active {
       display: block;
     }
 
@@ -196,7 +197,7 @@
       top: 0;
     }
 
-    span#tab1, span#tab2{
+    span#tab1, span#tab2, span#tab3{
     color: #FFF !important;
     padding: 14px 26px;
     display: inline-block;
@@ -206,7 +207,7 @@
         cursor: pointer;
     }
 
-    span#tab1.active, span#tab2.active{
+    span#tab1.active, span#tab2.active, span#tab3.active{
       background: #282c34;
     }
 
@@ -216,6 +217,12 @@
 
     code:focus-visible, .editor-container pre:focus-visible{
       outline: 0 !important;
+    }
+
+    ul li button#speedincrease, ul li button#speeddecrease{
+border: 0;
+    background: transparent;
+    font-size: 20px;
     }
   </style>
 </head>
@@ -243,6 +250,9 @@
         <li><button id="popupCssBtn" class="btn btn-info btn-sm"><i class="fa-brands fa-css3-alt"></i> CSS
             Popup</button></li>
 
+            <li><button id="popupJsBtn" class="btn btn-info btn-sm"><i class="fa-brands fa-js"></i> JS
+              Popup</button></li>
+
 
             <li><button class="speedincrease" id="speedincrease">+</button><input type="number" id="typingSpeed" value="50" style="width: 60px;"><button class="speeddecrease" id="speeddecrease">-</button></li>
 
@@ -259,6 +269,7 @@
           <ul>
             <li><span id="tab1" class="active"><i class="fa-brands fa-html5"></i> HTML</span></li>
             <li><span id="tab2"><i class="fa-brands fa-css3-alt"></i> CSS</span></li>
+            <li><span id="tab3"><i class="fa-brands fa-js"></i> JS</span></li>
           </ul>
         </div>
         <div class="right_menu ">
@@ -280,6 +291,11 @@
   
           <div class="tab_box2 tab_box" id="tab_box2">
             <pre id="cssCode" class="language-css" contenteditable="true"></pre>
+          </div>
+
+
+          <div class="tab_box3 tab_box" id="tab_box3">
+            <pre id="jsCode" class="language-js" contenteditable="true"></pre>
           </div>
 
         </div>
@@ -311,6 +327,16 @@
     <textarea id="cssContentToType" class="form-control" style="width: 100%; height: 300px;"></textarea>
   </div>
 
+
+  <div class="overlay" id="popupJsOverlay"></div>
+  <div class="popup" id="popupJs">
+    <div class="popup-header">
+      <h3>Js Popup Content</h3>
+      <button id="closeJsPopup">&times;</button>
+    </div>
+    <textarea id="jsContentToType" class="form-control" style="width: 100%; height: 300px;"></textarea>
+  </div>
+
   <!-- Bootstrap JS and jQuery -->
   <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
@@ -329,7 +355,9 @@
 
       // Add active class to clicked button and corresponding tab box
       $(this).addClass("active");
-      $($(this).is("#tab1") ? "#tab_box1" : "#tab_box2").addClass("active");
+      $($(this).is("#tab1") ? "#tab_box1" : $(this).is("#tab2") ? "#tab_box2" : "#tab_box3").addClass("active");
+
+      // $($(this).is("#tab1") ? "#tab_box1" : "#tab_box2" : "#tab_box3").addClass("active");
     });
 
     $('#fullSize').click(function () {
@@ -353,137 +381,125 @@
   </script>
 
   <script>
-    const codeEditor = document.getElementById('code');
-    const cssEditor = document.getElementById('cssCode');
-    const preview = document.getElementById('preview');
-    const playButton = document.getElementById('playButton');
-    const zoomInBtn = document.getElementById('zoomInBtn');
-    const zoomOutBtn = document.getElementById('zoomOutBtn');
-    const popupBtn = document.getElementById('popupBtn');
-    const popupCssBtn = document.getElementById('popupCssBtn');
-    const popupOverlay = document.getElementById('popupOverlay');
-    const popupCssOverlay = document.getElementById('popupCssOverlay');
-    const popup = document.getElementById('popup');
-    const popupCss = document.getElementById('popupCss');
-    const closePopup = document.getElementById('closePopup');
-    const closeCssPopup = document.getElementById('closeCssPopup');
-    const codeText = document.getElementById('codeText');
-    const contentToType = document.getElementById('contentToType');
-    const cssContentToType = document.getElementById('cssContentToType');
+ 
+  const codeEditor = document.getElementById('code');
+  const cssEditor = document.getElementById('cssCode');
+  const jsEditor = document.getElementById('jsCode'); 
+  const preview = document.getElementById('preview');
+  const playButton = document.getElementById('playButton');
+  const zoomInBtn = document.getElementById('zoomInBtn');
+  const zoomOutBtn = document.getElementById('zoomOutBtn');
+  const popupBtn = document.getElementById('popupBtn');
+  const popupCssBtn = document.getElementById('popupCssBtn');
+  const popupJsBtn = document.getElementById('popupJsBtn');
+  const popupOverlay = document.getElementById('popupOverlay');
+  const popupCssOverlay = document.getElementById('popupCssOverlay');
+  const popupJsOverlay = document.getElementById('popupJsOverlay');
+  const popup = document.getElementById('popup');
+  const popupCss = document.getElementById('popupCss');
+  const popupJs = document.getElementById('popupJs');
+  const closePopup = document.getElementById('closePopup');
+  const closeCssPopup = document.getElementById('closeCssPopup');
+  const closeJsPopup = document.getElementById('closeJsPopup');
+  const codeText = document.getElementById('codeText');
+  const contentToType = document.getElementById('contentToType');
+  const cssContentToType = document.getElementById('cssContentToType');
+  const jsContentToType = document.getElementById('jsContentToType');
+  const typingSpeed = document.getElementById('typingSpeed');
 
-    const typingSpeed = document.getElementById('typingSpeed');
+  let fontSize = 14;
+  let currentText = '';
+  let currentIndex = 0;
+  let typingInterval;
+  let cssTypingInterval;
+  let jsTypingInterval;  // New typing interval for JS
 
-  
-    let fontSize = 14; // Initial font size for the preview code
-    let currentText = '';
-    let currentIndex = 0;
-    let typingInterval; // Declare typingInterval variable
-    let cssTypingInterval; // Declare cssTypingInterval variable
+  let cssCurrentText = '';
+  let cssCurrentIndex = 0;
+  let jsCurrentText = '';
+  let jsCurrentIndex = 0;
+  let isCssTypingStarted = false;
+  let isJsTypingStarted = false;
 
-    // Function to auto-scroll the code editor
-    function autoScroll(editor) {
-      editor.scrollTop = editor.scrollHeight;
-    }
+  // Function to auto-scroll the code editor
+  function autoScroll(editor) {
+    editor.scrollTop = editor.scrollHeight;
+  }
 
-    // Update preview iframe with live code
-    function updatePreview(htmlCode, cssCode) {
-      const doc = preview.contentWindow.document;
-      doc.open();
-      doc.write(`
-        <html>
-          <head>
-            <style>${cssCode}</style>
-          </head>
-          <body>${htmlCode}</body>
-        </html>
-      `);
-      doc.close();
-    }
+  // Update preview iframe with live code
+  function updatePreview(htmlCode, cssCode, jsCode = '') {
+    const doc = preview.contentWindow.document;
+    doc.open();
+    doc.write(`
+      <html>
+        <head>
+          <style>${cssCode}</style>
+        </head>
+        <body>${htmlCode} <script>${jsCode}<\/script></body>
+      </html>
+    `);
+    doc.close();
+  }
 
-    // Highlight raw code in the editor
-    function updatePreviewCode(code) {
-      const escapedCode = escapeHtml(code) + '|';
-      codeEditor.innerHTML = `<code class="language-html" style="white-space: pre-wrap;">${escapedCode}</code>`;
-      hljs.highlightAll(); // Apply Highlight.js syntax highlighting
-    }
+  // Highlight raw code in the editor
+  function updatePreviewCode(code) {
+    const escapedCode = escapeHtml(code) + '|';
+    codeEditor.innerHTML = `<code class="language-html" style="white-space: pre-wrap;">${escapedCode}</code>`;
+    hljs.highlightAll(); // Apply Highlight.js syntax highlighting
+  }
 
-    function updateCssCode(code) {
-      const escapedCode = escapeHtml(code) + '|';
-      cssEditor.innerHTML = `<code class="language-css" style="white-space: pre-wrap;">${escapedCode}</code>`;
-      hljs.highlightAll(); // Apply Highlight.js syntax highlighting
-    }
+  function updateCssCode(code) {
+    const escapedCode = escapeHtml(code) + '|';
+    cssEditor.innerHTML = `<code class="language-css" style="white-space: pre-wrap;">${escapedCode}</code>`;
+    hljs.highlightAll(); // Apply Highlight.js syntax highlighting
+  }
 
-    // Escape HTML code for safe rendering in the preview
-    function escapeHtml(code) {
-      return code
-        .replace(/&/g, '&amp;')
-        .replace(/</g, '&lt;')
-        .replace(/>/g, '&gt;')
-        .replace(/"/g, '&quot;')
-        .replace(/'/g, '&#039;');
-    }
+  function updateJsCode(code) {  // New function to update JS code
+    const escapedCode = escapeHtml(code) + '|';
+    jsEditor.innerHTML = `<code class="language-javascript" style="white-space: pre-wrap;">${escapedCode}</code>`;
+    hljs.highlightAll();
+  }
 
-    // Typing effect function for HTML
-    // function typeText() {
-    //   if (currentIndex < contentToType.value.length) {
-    //     currentText += contentToType.value.charAt(currentIndex);
-    //     codeEditor.textContent = currentText + '|'; // Add cursor
-    //     updatePreview(currentText); // Update preview with HTML and CSS
-    //     updatePreviewCode(currentText);
-    //     currentIndex++;
-    //     autoScroll(codeEditor); // Auto-scroll the HTML editor
-    //   } else {
-    //     clearInterval(typingInterval);
-    //     // Start CSS typing after HTML stops
+  // Escape HTML code for safe rendering in the preview
+  function escapeHtml(code) {
+    return code
+      .replace(/&/g, '&amp;')
+      .replace(/</g, '&lt;')
+      .replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;')
+      .replace(/'/g, '&#039;');
+  }
 
-    //     $("#tab2").addClass("active");
-    //     $("#tab1").removeClass("active");
-
-    //     // Activate tab_box2 and deactivate tab_box1
-    //     $(".tab_box2").addClass("active");
-    //     $(".tab_box1").removeClass("active");
-
-    //     // Run startCssTyping() after 5 seconds
-    //     setTimeout(startCssTyping, 1000);
-
-    //   }
-    // }
-
-
-
-// Typing effect function for CSS
-let cssCurrentText = '';
-let cssCurrentIndex = 0;
-let isCssTypingStarted = false; // Flag to track if CSS typing has started
-
-function updateTypingInterval() {
-  var currentSpeed = parseInt($('#typingSpeed').val()) || 50; // Default to 50 if the value is not a valid number
-  clearInterval(typingInterval); // Clear previous interval
-  clearInterval(cssTypingInterval); // Clear previous CSS interval
-  
-  // Start typing effect with the new speed
-  typingInterval = setInterval(typeText, currentSpeed); 
-}
-
-// Bind the typing speed input change to update the typing interval
-$('#typingSpeed').on('change', updateTypingInterval);
-
-// Typing effect function for HTML
-function typeText() {
-  if (currentIndex < contentToType.value.length) {
-    currentText += contentToType.value.charAt(currentIndex);
-    codeEditor.textContent = currentText + '|'; // Add cursor
-    updatePreview(currentText); // Update preview with HTML and CSS
-    updatePreviewCode(currentText);
-    currentIndex++;
-    autoScroll(codeEditor); // Auto-scroll the HTML editor
-  } else {
-    clearInterval(typingInterval); // Stop HTML typing
+  // Typing effect function for CSS
+  function updateTypingInterval() {
+    var currentSpeed = parseInt($('#typingSpeed').val()) || 50; // Default to 50 if the value is not a valid number
+    clearInterval(typingInterval); // Clear previous interval
+    clearInterval(cssTypingInterval); // Clear previous CSS interval
+    clearInterval(jsTypingInterval); // Clear previous JS interval
     
-    // Start CSS typing effect only once after HTML typing ends
-    if (!isCssTypingStarted) {
-      isCssTypingStarted = true;
-      $("#tab2").addClass("active");
+    // Start typing effect with the new speed
+    typingInterval = setInterval(typeText, currentSpeed); 
+  }
+
+  // Bind the typing speed input change to update the typing interval
+  // $('#typingSpeed').on('change', updateTypingInterval);
+
+  // Typing effect function for HTML
+  function typeText() {
+    if (currentIndex < contentToType.value.length) {
+      currentText += contentToType.value.charAt(currentIndex);
+      codeEditor.textContent = currentText + '|'; // Add cursor
+      updatePreview(currentText, cssCurrentText, jsCurrentText); // Update preview with HTML and CSS
+      updatePreviewCode(currentText);
+      currentIndex++;
+      autoScroll(codeEditor); // Auto-scroll the HTML editor
+    } else {
+      clearInterval(typingInterval); // Stop HTML typing
+
+      // Start CSS typing effect only once after HTML typing ends
+      if (!isCssTypingStarted) {
+        isCssTypingStarted = true;
+        $("#tab2").addClass("active");
         $("#tab1").removeClass("active");
 
         // Activate tab_box2 and deactivate tab_box1
@@ -492,80 +508,123 @@ function typeText() {
 
         // Run startCssTyping() after 5 seconds
         setTimeout(startCssTyping, 1000);
+      }
+    }
+  }
+
+  // Start the CSS typing effect
+  function startCssTyping() {
+    cssCurrentText = '';
+    cssCurrentIndex = 0;
+    cssTypingInterval = setInterval(cssTypeText, parseInt($('#typingSpeed').val()) || 50); // Use the current speed for CSS typing
+  }
+
+  function cssTypeText() {
+    if (cssCurrentIndex < cssContentToType.value.length) {
+      cssCurrentText += cssContentToType.value.charAt(cssCurrentIndex);
+      cssEditor.textContent = cssCurrentText + '|';
+      updatePreview(currentText, cssCurrentText, jsCurrentText);
+      updateCssCode(cssCurrentText);
+      cssCurrentIndex++;
+      autoScroll(cssEditor);
+    } else {
+      clearInterval(cssTypingInterval);
+
+    if (!isJsTypingStarted && jsContentToType.value.trim() !== '') {
+      isJsTypingStarted = true;
+
+      $("#tab3").addClass("active");
+      $("#tab2").removeClass("active");
+      $("#tab1").removeClass("active");
+
+      // Activate tab_box3 and deactivate tab_box2
+      $(".tab_box3").addClass("active");
+      $(".tab_box2").removeClass("active");
+      $(".tab_box1").removeClass("active");
+
+      // Run startJsTyping() after 1 second
+      setTimeout(startJsTyping, 1000);
     }
 
-
-
-
+    }
   }
-}
 
-// Start the CSS typing effect
-function startCssTyping() {
-  cssCurrentText = '';
-  cssCurrentIndex = 0;
-  cssTypingInterval = setInterval(cssTypeText, parseInt($('#typingSpeed').val()) || 50); // Use the current speed for CSS typing
-}
-
-function cssTypeText() {
-  if (cssCurrentIndex < cssContentToType.value.length) {
-    cssCurrentText += cssContentToType.value.charAt(cssCurrentIndex);
-    cssEditor.textContent = cssCurrentText + '|'; // Add cursor
-    updatePreview(currentText, cssCurrentText); // Update preview with both HTML and CSS
-    updateCssCode(cssCurrentText);
-    cssCurrentIndex++;
-    autoScroll(cssEditor); // Auto-scroll the CSS editor
-  } else {
-    clearInterval(cssTypingInterval); // Stop CSS typing
+  function startJsTyping() {
+    jsCurrentText = '';
+    jsCurrentIndex = 0;
+    jsTypingInterval = setInterval(jsTypeText, parseInt($('#typingSpeed').val()) || 50);
   }
-}
 
-// Start the typing effect when Play button is clicked
-playButton.addEventListener('click', () => {
-  currentText = '';
-  currentIndex = 0;
-  isCssTypingStarted = false; // Reset CSS typing flag
-  updateTypingInterval(); // Use the updated typing speed when starting the HTML typing effect
-});
+  function jsTypeText() {
+    if (jsCurrentIndex < jsContentToType.value.length) {
+      jsCurrentText += jsContentToType.value.charAt(jsCurrentIndex);
+      jsEditor.textContent = jsCurrentText + '|';
+      updatePreview(currentText, cssCurrentText, jsCurrentText);
+      updateJsCode(jsCurrentText);
+      jsCurrentIndex++;
+      autoScroll(jsEditor);
+    } else {
+      clearInterval(jsTypingInterval);
+    }
+  }
 
+  // Start the typing effect when Play button is clicked
+  playButton.addEventListener('click', () => {
+    currentText = '';
+    currentIndex = 0;
+    isCssTypingStarted = false;
+    isJsTypingStarted = false;  // Reset JS flag
+    updateTypingInterval();
+  });
 
-    // Zoom In / Zoom Out for editors
-    zoomInBtn.addEventListener('click', () => {
-      fontSize += 2;
-      codeEditor.style.fontSize = `${fontSize}px`;
-      cssEditor.style.fontSize = `${fontSize}px`;
-    });
+  // Zoom In / Zoom Out for editors
+  zoomInBtn.addEventListener('click', () => {
+    fontSize += 2;
+    codeEditor.style.fontSize = `${fontSize}px`;
+    cssEditor.style.fontSize = `${fontSize}px`;
+  });
 
-    zoomOutBtn.addEventListener('click', () => {
-      fontSize -= 2;
-      codeEditor.style.fontSize = `${fontSize}px`;
-      cssEditor.style.fontSize = `${fontSize}px`;
-    });
+  zoomOutBtn.addEventListener('click', () => {
+    fontSize -= 2;
+    codeEditor.style.fontSize = `${fontSize}px`;
+    cssEditor.style.fontSize = `${fontSize}px`;
+  });
 
-    // Popup handling for HTML editor
-    popupBtn.addEventListener('click', () => {
-      popupOverlay.style.display = 'block';
-      popup.style.display = 'block';
-    });
+  // Popup handling for HTML editor
+  popupBtn.addEventListener('click', () => {
+    popupOverlay.style.display = 'block';
+    popup.style.display = 'block';
+  });
 
-    // Popup handling for CSS editor
-    popupCssBtn.addEventListener('click', () => {
-      popupCssOverlay.style.display = 'block';
-      popupCss.style.display = 'block';
-    });
+  // Popup handling for CSS editor
+  popupCssBtn.addEventListener('click', () => {
+    popupCssOverlay.style.display = 'block';
+    popupCss.style.display = 'block';
+  });
 
-    // Close popups
-    closePopup.addEventListener('click', () => {
-      popupOverlay.style.display = 'none';
-      popup.style.display = 'none';
-    });
+  // Popup handling for JS editor
+  popupJsBtn.addEventListener('click', () => {
+    popupJsOverlay.style.display = 'block';
+    popupJs.style.display = 'block';
+  });
 
-    closeCssPopup.addEventListener('click', () => {
-      popupCssOverlay.style.display = 'none';
-      popupCss.style.display = 'none';
-    });
+  // Close popups
+  closePopup.addEventListener('click', () => {
+    popupOverlay.style.display = 'none';
+    popup.style.display = 'none';
+  });
 
-      // Close popups when clicking outside the popup
+  closeCssPopup.addEventListener('click', () => {
+    popupCssOverlay.style.display = 'none';
+    popupCss.style.display = 'none';
+  });
+
+  closeJsPopup.addEventListener('click', () => {
+    popupJsOverlay.style.display = 'none';
+    popupJs.style.display = 'none';
+  });
+
+  // Close popups when clicking outside the popup
   popupOverlay.addEventListener('click', () => {
     popupOverlay.style.display = 'none';
     popup.style.display = 'none';
@@ -575,6 +634,12 @@ playButton.addEventListener('click', () => {
     popupCssOverlay.style.display = 'none';
     popupCss.style.display = 'none';
   });
+
+  popupJsOverlay.addEventListener('click', () => {
+    popupJsOverlay.style.display = 'none';
+    popupJs.style.display = 'none';
+  });
+
   </script>
 </body>
 
