@@ -494,7 +494,7 @@ border: 0;
       clearInterval(typingInterval); // Stop HTML typing
 
       // Start CSS typing effect only once after HTML typing ends
-      if (!isCssTypingStarted) {
+      if (!isCssTypingStarted && cssContentToType.value.trim() !== '') {
         isCssTypingStarted = true;
         $("#tab2").addClass("active");
         $("#tab1").removeClass("active");
