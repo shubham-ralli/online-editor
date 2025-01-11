@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Live Code Editor with HTML and CSS Preview</title>
+
+  <!-- Bootstrap CSS -->
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css" />
+
+  <style>
+    /* Basic Reset */
+    body,
+    html {
+      height: 100%;
+    }
+
+    /* Remove default margins/paddings for flexbox */
+    .container-fluid,
+    .row,
+    .col {
+      margin: 0;
+      padding: 0;
+    }
+
+    /* Full Height and Flexbox for layout */
+    .container-fluid {
+      height: calc(100vh - 51px);
+      display: flex;
+      flex-direction: row;
+    }
+
+    /* Editor Container Styling */
+    .editor-container {
+      width: 45%;
+      padding: 0;
+      background-color: #010101;
+      border-right: 0;
+    }
+
+    .editor-container h2 {
+      text-align: center;
+      color: #333;
+      font-size: 20px;
+      margin-bottom: 1rem;
+    }
+
+    .editor-container pre {
+      width: 100%;
+      height: 100%;
+      border-radius: 0px;
+      padding: 10px 10px;
+      font-size: 16px;
+      font-family: 'Courier New', Courier, monospace;
+      background-color: #282c34;
+      color: white;
+      overflow: auto;
+      white-space: pre-wrap;
+    }
+
+    /* Hide codeText by default */
+    #codeText {
+      display: none;
+    }
+
+    .preview-container {
+      width: 55%;
+      background-color: #fff;
+    }
+
+    .preview-container h2 {
+      text-align: center;
+      color: #333;
+      font-size: 20px;
+      margin-bottom: 1rem;
+    }
+
+    .preview-frame {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    /* Popup Modal Styling */
+    .popup {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: 50%;
+      background-color: #fff;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
+      border-radius: 8px;
+      padding: 20px;
+      z-index: 1000;
+      display: none;
+    }
+
+    .popup-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .popup-header h3 {
+      margin: 0;
+    }
+
+    .popup-header button {
+      background: none;
+      border: none;
+      font-size: 18px;
+      cursor: pointer;
+    }
+
+    .overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      z-index: 999;
+      display: none;
+    }
+
+
+    .tab_box {
+      height: 100%;
+    }
+
+    .tab_box1,
+    .tab_box2 {
+      display: none;
+    }
+
+    .tab_box1.active,
+    .tab_box2.active {
+      display: block;
+    }
+
+    .menu_list button.active {
+      background-color: #007bff;
+      color: #fff;
+    }
+
+
+    .header_menu {
+      background: white;
+      display: flex;
+      justify-content: space-between;
+      padding: 10px;
+      align-items: center;
+    }
+
+    .header_menu ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      display: inline;
+    }
+
+    .header_menu ul li {
+      display: inline;
+    }
+
+    .sub_menu {
+      display: flex;
+      justify-content: space-between;
+      background: #010101;
+      align-items: center;
+    }
+
+    .sub_menu ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .sub_menu ul li {
+      display: inline;
+    }
+
+    .sub_menu .right_menu{
+      padding-right: 12px;
+    }
+
+    .full_editor_cod.activetab {
+      position: absolute;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      top: 0;
+    }
+
+    span#tab1, span#tab2{
+    color: #FFF !important;
+    padding: 14px 26px;
+    display: inline-block;
+    font-weight: 600;
+    font-size: 18px;
+    letter-spacing: 1px;
+        cursor: pointer;
+    }
+
+    span#tab1.active, span#tab2.active{
+      background: #282c34;
+    }
+
+    .logo h2{
+      font-weight: 800;
+    }
+
+    code:focus-visible, .editor-container pre:focus-visible{
+      outline: 0 !important;
+    }
+  </style>
+</head>
+
+<body>
+
+
+  <!-- Code Editor Section -->
+
+
+  <div class="header_menu">
+
+    <div class="logo">
+      <h2>CodeEditor</h2>
+    </div>
+
+    <div class="menu">
+      <ul>
+        <li><button id="zoomInBtn" class="btn btn-secondary btn-sm"><i
+              class="fa-solid fa-magnifying-glass-plus"></i></button></li>
+        <li><button id="zoomOutBtn" class="btn btn-secondary btn-sm"><i
+              class="fa-solid fa-magnifying-glass-minus"></i></button></li>
+        <li><button id="popupBtn" class="btn btn-info btn-sm"><i class="fa-brands fa-html5"></i> HTML Popup</button>
+        </li>
+        <li><button id="popupCssBtn" class="btn btn-info btn-sm"><i class="fa-brands fa-css3-alt"></i> CSS
+            Popup</button></li>
+
+
+            <li><button class="speedincrease" id="speedincrease">+</button><input type="number" id="typingSpeed" value="50" style="width: 60px;"><button class="speeddecrease" id="speeddecrease">-</button></li>
+
+
+      </ul>
+    </div>
+  </div>
+
+
+  <div class="full_editor_cod">
+    <div class="menu_list">
+      <div class="sub_menu">
+        <div class="left_menu">
+          <ul>
+            <li><span id="tab1" class="active"><i class="fa-brands fa-html5"></i> HTML</span></li>
+            <li><span id="tab2"><i class="fa-brands fa-css3-alt"></i> CSS</span></li>
+          </ul>
+        </div>
+        <div class="right_menu ">
+          <ul>
+            <li><button id="playButton" class="btn btn-link btn-sm"><i class="fa-solid fa-play text-white"></i></button>
+            </li>
+            <li><button id="fullSize" class="btn btn-link btn-sm"><i class="fa-solid fa-expand text-white"></i></li>
+          </ul>
+        </div>
+      </div>
+  
+      <div class="container-fluid">
+        <div class="editor-container">
+          <div class="tab_box1 tab_box active" id="tab_box1">
+            <pre id="code" class="language-html" contenteditable="true"></pre>
+            <textarea id="codeText" class="form-control" rows="5"
+              placeholder="Write your HTML, CSS, and JS code here..."></textarea>
+          </div>
+  
+          <div class="tab_box2 tab_box" id="tab_box2">
+            <pre id="cssCode" class="language-css" contenteditable="true"></pre>
+          </div>
+
+        </div>
+  
+        <div class="preview-container">
+          <iframe id="preview" class="preview-frame"></iframe>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Popup Modal for HTML -->
+  <div class="overlay" id="popupOverlay"></div>
+  <div class="popup" id="popup">
+    <div class="popup-header">
+      <h3>HTML Popup Content</h3>
+      <button id="closePopup">&times;</button>
+    </div>
+    <textarea id="contentToType" class="form-control" style="width: 100%; height: 300px;"></textarea>
+  </div>
+
+  <!-- Popup Modal for CSS -->
+  <div class="overlay" id="popupCssOverlay"></div>
+  <div class="popup" id="popupCss">
+    <div class="popup-header">
+      <h3>CSS Popup Content</h3>
+      <button id="closeCssPopup">&times;</button>
+    </div>
+    <textarea id="cssContentToType" class="form-control" style="width: 100%; height: 300px;"></textarea>
+  </div>
+
+  <!-- Bootstrap JS and jQuery -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+  <!-- Highlight.js -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+
+
+  <script>
+ $(document).ready(function () {
+    $(".menu_list span").on("click", function () {
+      // Remove active class from all buttons and tab boxes
+      $(".menu_list span").removeClass("active");
+      $(".tab_box").removeClass("active");
+
+      // Add active class to clicked button and corresponding tab box
+      $(this).addClass("active");
+      $($(this).is("#tab1") ? "#tab_box1" : "#tab_box2").addClass("active");
+    });
+
+    $('#fullSize').click(function () {
+      $('.full_editor_cod').toggleClass('activetab');
+    });
+
+
+    $('#speedincrease').click(function() {
+      var currentValue = parseInt($('#typingSpeed').val());
+      $('#typingSpeed').val(currentValue + 1);
+    });
+
+    // Decrease the value of #typingSpeed by 1 when #speeddecrease is clicked
+    $('#speeddecrease').click(function() {
+      var currentValue = parseInt($('#typingSpeed').val());
+      $('#typingSpeed').val(currentValue - 1);
+    });
+
+  });
+
+  </script>
+
+  <script>
+    const codeEditor = document.getElementById('code');
+    const cssEditor = document.getElementById('cssCode');
+    const preview = document.getElementById('preview');
+    const playButton = document.getElementById('playButton');
+    const zoomInBtn = document.getElementById('zoomInBtn');
+    const zoomOutBtn = document.getElementById('zoomOutBtn');
+    const popupBtn = document.getElementById('popupBtn');
+    const popupCssBtn = document.getElementById('popupCssBtn');
+    const popupOverlay = document.getElementById('popupOverlay');
+    const popupCssOverlay = document.getElementById('popupCssOverlay');
+    const popup = document.getElementById('popup');
+    const popupCss = document.getElementById('popupCss');
+    const closePopup = document.getElementById('closePopup');
+    const closeCssPopup = document.getElementById('closeCssPopup');
+    const codeText = document.getElementById('codeText');
+    const contentToType = document.getElementById('contentToType');
+    const cssContentToType = document.getElementById('cssContentToType');
+
+    const typingSpeed = document.getElementById('typingSpeed');
+
+  
+    let fontSize = 14; // Initial font size for the preview code
+    let currentText = '';
+    let currentIndex = 0;
+    let typingInterval; // Declare typingInterval variable
+    let cssTypingInterval; // Declare cssTypingInterval variable
+
+    // Function to auto-scroll the code editor
+    function autoScroll(editor) {
+      editor.scrollTop = editor.scrollHeight;
+    }
+
+    // Update preview iframe with live code
+    function updatePreview(htmlCode, cssCode) {
+      const doc = preview.contentWindow.document;
+      doc.open();
+      doc.write(`
+        <html>
+          <head>
+            <style>${cssCode}</style>
+          </head>
+          <body>${htmlCode}</body>
+        </html>
+      `);
+      doc.close();
+    }
+
+    // Highlight raw code in the editor
+    function updatePreviewCode(code) {
+      const escapedCode = escapeHtml(code) + '|';
+      codeEditor.innerHTML = `<code class="language-html" style="white-space: pre-wrap;">${escapedCode}</code>`;
+      hljs.highlightAll(); // Apply Highlight.js syntax highlighting
+    }
+
+    function updateCssCode(code) {
+      const escapedCode = escapeHtml(code) + '|';
+      cssEditor.innerHTML = `<code class="language-css" style="white-space: pre-wrap;">${escapedCode}</code>`;
+      hljs.highlightAll(); // Apply Highlight.js syntax highlighting
+    }
+
+    // Escape HTML code for safe rendering in the preview
+    function escapeHtml(code) {
+      return code
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    // Typing effect function for HTML
+    // function typeText() {
+    //   if (currentIndex < contentToType.value.length) {
+    //     currentText += contentToType.value.charAt(currentIndex);
+    //     codeEditor.textContent = currentText + '|'; // Add cursor
+    //     updatePreview(currentText); // Update preview with HTML and CSS
+    //     updatePreviewCode(currentText);
+    //     currentIndex++;
+    //     autoScroll(codeEditor); // Auto-scroll the HTML editor
+    //   } else {
+    //     clearInterval(typingInterval);
+    //     // Start CSS typing after HTML stops
+
+    //     $("#tab2").addClass("active");
+    //     $("#tab1").removeClass("active");
+
+    //     // Activate tab_box2 and deactivate tab_box1
+    //     $(".tab_box2").addClass("active");
+    //     $(".tab_box1").removeClass("active");
+
+    //     // Run startCssTyping() after 5 seconds
+    //     setTimeout(startCssTyping, 1000);
+
+    //   }
+    // }
+
+
+
+// Typing effect function for CSS
+let cssCurrentText = '';
+let cssCurrentIndex = 0;
+let isCssTypingStarted = false; // Flag to track if CSS typing has started
+
+function updateTypingInterval() {
+  var currentSpeed = parseInt($('#typingSpeed').val()) || 50; // Default to 50 if the value is not a valid number
+  clearInterval(typingInterval); // Clear previous interval
+  clearInterval(cssTypingInterval); // Clear previous CSS interval
+  
+  // Start typing effect with the new speed
+  typingInterval = setInterval(typeText, currentSpeed); 
+}
+
+// Bind the typing speed input change to update the typing interval
+$('#typingSpeed').on('change', updateTypingInterval);
+
+// Typing effect function for HTML
+function typeText() {
+  if (currentIndex < contentToType.value.length) {
+    currentText += contentToType.value.charAt(currentIndex);
+    codeEditor.textContent = currentText + '|'; // Add cursor
+    updatePreview(currentText); // Update preview with HTML and CSS
+    updatePreviewCode(currentText);
+    currentIndex++;
+    autoScroll(codeEditor); // Auto-scroll the HTML editor
+  } else {
+    clearInterval(typingInterval); // Stop HTML typing
+    
+    // Start CSS typing effect only once after HTML typing ends
+    if (!isCssTypingStarted) {
+      isCssTypingStarted = true;
+      $("#tab2").addClass("active");
+        $("#tab1").removeClass("active");
+
+        // Activate tab_box2 and deactivate tab_box1
+        $(".tab_box2").addClass("active");
+        $(".tab_box1").removeClass("active");
+
+        // Run startCssTyping() after 5 seconds
+        setTimeout(startCssTyping, 1000);
+    }
+
+
+
+
+  }
+}
+
+// Start the CSS typing effect
+function startCssTyping() {
+  cssCurrentText = '';
+  cssCurrentIndex = 0;
+  cssTypingInterval = setInterval(cssTypeText, parseInt($('#typingSpeed').val()) || 50); // Use the current speed for CSS typing
+}
+
+function cssTypeText() {
+  if (cssCurrentIndex < cssContentToType.value.length) {
+    cssCurrentText += cssContentToType.value.charAt(cssCurrentIndex);
+    cssEditor.textContent = cssCurrentText + '|'; // Add cursor
+    updatePreview(currentText, cssCurrentText); // Update preview with both HTML and CSS
+    updateCssCode(cssCurrentText);
+    cssCurrentIndex++;
+    autoScroll(cssEditor); // Auto-scroll the CSS editor
+  } else {
+    clearInterval(cssTypingInterval); // Stop CSS typing
+  }
+}
+
+// Start the typing effect when Play button is clicked
+playButton.addEventListener('click', () => {
+  currentText = '';
+  currentIndex = 0;
+  isCssTypingStarted = false; // Reset CSS typing flag
+  updateTypingInterval(); // Use the updated typing speed when starting the HTML typing effect
+});
+
+
+    // Zoom In / Zoom Out for editors
+    zoomInBtn.addEventListener('click', () => {
+      fontSize += 2;
+      codeEditor.style.fontSize = `${fontSize}px`;
+      cssEditor.style.fontSize = `${fontSize}px`;
+    });
+
+    zoomOutBtn.addEventListener('click', () => {
+      fontSize -= 2;
+      codeEditor.style.fontSize = `${fontSize}px`;
+      cssEditor.style.fontSize = `${fontSize}px`;
+    });
+
+    // Popup handling for HTML editor
+    popupBtn.addEventListener('click', () => {
+      popupOverlay.style.display = 'block';
+      popup.style.display = 'block';
+    });
+
+    // Popup handling for CSS editor
+    popupCssBtn.addEventListener('click', () => {
+      popupCssOverlay.style.display = 'block';
+      popupCss.style.display = 'block';
+    });
+
+    // Close popups
+    closePopup.addEventListener('click', () => {
+      popupOverlay.style.display = 'none';
+      popup.style.display = 'none';
+    });
+
+    closeCssPopup.addEventListener('click', () => {
+      popupCssOverlay.style.display = 'none';
+      popupCss.style.display = 'none';
+    });
+
+      // Close popups when clicking outside the popup
+  popupOverlay.addEventListener('click', () => {
+    popupOverlay.style.display = 'none';
+    popup.style.display = 'none';
+  });
+
+  popupCssOverlay.addEventListener('click', () => {
+    popupCssOverlay.style.display = 'none';
+    popupCss.style.display = 'none';
+  });
+  </script>
+</body>
+
+</html>
