@@ -476,13 +476,10 @@ border: 0;
     clearInterval(typingInterval); // Clear previous interval
     clearInterval(cssTypingInterval); // Clear previous CSS interval
     clearInterval(jsTypingInterval); // Clear previous JS interval
-    
-    // Start typing effect with the new speed
+
     typingInterval = setInterval(typeText, currentSpeed); 
   }
 
-  // Bind the typing speed input change to update the typing interval
-  // $('#typingSpeed').on('change', updateTypingInterval);
 
   // Typing effect function for HTML
   function typeText() {
@@ -497,7 +494,7 @@ border: 0;
       clearInterval(typingInterval); // Stop HTML typing
 
       // Start CSS typing effect only once after HTML typing ends
-      if (!isCssTypingStarted && isCssTypingStarted.value.trim() !== '') {
+      if (!isCssTypingStarted) {
         isCssTypingStarted = true;
         $("#tab2").addClass("active");
         $("#tab1").removeClass("active");
